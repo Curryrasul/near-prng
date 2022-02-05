@@ -1,5 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{env, log, near_bindgen, BlockHeight, PanicOnDefault};
+use near_sdk::{env, log, near_bindgen, BlockHeight};
 
 // generator is chacha function (read it https://bashtage.github.io/randomgen/bit_generators/chacha.html)
 use rand_chacha::{self, rand_core::SeedableRng};
@@ -9,7 +9,7 @@ use rand_core::RngCore;
 near_sdk::setup_alloc!();
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+#[derive(BorshDeserialize, BorshSerialize, Default)]
 pub struct Contract {
     // block_index is = to block's index
     block_index: BlockHeight,
@@ -19,18 +19,6 @@ pub struct Contract {
 
 #[near_bindgen]
 impl Contract {
-    // constructor function
-    #[init]
-    pub fn new() -> Self {
-        assert!(!env::state_exists(), "Contract already initialized");
-
-        Self {
-            block_index: env::block_index(),
-            // converting random_seed ([u8; 32]) to u64
-            seed: u64::from_be_bytes((env::random_seed())[..8].try_into().unwrap()),
-        }
-    }
-
     pub fn generate(&mut self) -> u64 {
         // if the block is new (not the same block from previous function call), state has to be updated
         if env::block_index() != self.block_index {
@@ -64,27 +52,13 @@ mod tests {
     }
 
     #[test]
-    fn test_init() {
-        let block_index = 123456789u64;
-        let random_seed: Vec<u8> = (0..32).map(|x| x).collect();
-
-        let context = get_context(block_index, random_seed);
-        testing_env!(context);
-
-        let contract = Contract::new();
-
-        assert!(contract.seed == u64::from_be_bytes((env::random_seed())[..8].try_into().unwrap()));
-        assert!(contract.block_index == block_index);
-    }
-
-    #[test]
     fn test_generate() {
         let mut block_index = 123456789u64;
         let mut random_seed: Vec<u8> = (0..32).map(|x| x).collect();
         let mut context = get_context(block_index, random_seed);
         testing_env!(context);
 
-        let mut contract = Contract::new();
+        let mut contract = Contract::default();
 
         let first_seed = contract.seed;
         contract.generate();
