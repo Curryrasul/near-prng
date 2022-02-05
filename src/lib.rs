@@ -1,5 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{near_bindgen, env, PanicOnDefault, BlockHeight};
+use near_sdk::{near_bindgen, env, PanicOnDefault, BlockHeight, log};
 
 use rand_chacha::{self, rand_core::SeedableRng};
 use rand_core::RngCore;
@@ -17,6 +17,8 @@ pub struct Contract {
 impl Contract {
     #[init]
     pub fn new() -> Self {
+        assert!(!env::state_exists(), "Contract already initialized");
+
         Self {
             block_index: env::block_index(),
             seed: u64::from_be_bytes((env::random_seed())[..8].try_into().unwrap()),
@@ -31,6 +33,8 @@ impl Contract {
 
         let mut gen = rand_chacha::ChaCha12Rng::seed_from_u64(self.seed);
         self.seed = gen.next_u64();
+
+        log!("Generated number: {}", self.seed);
 
         self.seed
     }
