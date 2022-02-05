@@ -35,6 +35,7 @@ impl Contract {
         self.seed = gen.next_u64();
 
         log!("Generated number: {}", self.seed);
+        log!("Current block: {}", self.block_index);
 
         self.seed
     }
