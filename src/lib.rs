@@ -40,3 +40,8 @@ impl Contract {
         self.seed
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // use super::*;
+}
